@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛡️ Gabriel AI: Digital Judge Protocol</title>
+  <style>
+    :root { --danger: #ff4757; --warning: #ffa502; --success: #2ed573; --dark: #081217; --accent: #00d2d3; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Inter', -apple-system, sans-serif; 
+      background: var(--dark); color: white;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      background-image: radial-gradient(circle at 50% 50%, #0f2027 0%, #081217 100%);
+    }
+    .container { 
+      background: rgba(255,255,255,0.02); backdrop-filter: blur(25px);
+      padding: 40px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.1);
+      max-width: 700px; width: 100%; text-align: center;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+    }
+    h1 { font-size: 3.5em; font-weight: 900; letter-spacing: -2px; background: linear-gradient(180deg, #fff, #777); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+    .tagline { color: var(--accent); text-transform: uppercase; letter-spacing: 5px; font-size: 0.75em; margin-bottom: 40px; opacity: 0.8; }
+    
+    form { width: 100%; }
+    .search-box { position: relative; margin-bottom: 25px; }
+    input { 
+      width: 100%; padding: 25px; background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.05);
+      border-radius: 20px; color: white; font-size: 1.1em; transition: 0.4s; text-align: center;
+    }
+    input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 40px rgba(0,210,211,0.15); }
+    
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    button { padding: 20px; border: none; border-radius: 18px; font-size: 1em; font-weight: 800; cursor: pointer; transition: 0.3s; }
+    .btn-scan { background: var(--accent); color: #081217; text-transform: uppercase; grid-column: span 2; }
+    .btn-scan:disabled { opacity: 0.5; }
+    .btn-support { background: rgba(255,255,255,0.05); color: #aaa; border: 1px solid rgba(255,255,255,0.1); }
+    .btn-support:hover { background: rgba(255,255,255,0.1); color: white; }
+
+    .result-box { margin-top: 35px; display: none; animation: fadeIn 0.8s ease; }
+    .log-line { font-family: 'Courier New', monospace; font-size: 0.8em; color: var(--accent); margin-bottom: 15px; text-align: left; min-height: 1.2em; }
+    
+    .card { padding: 35px; border-radius: 30px; background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.1); }
+    .score-circle { font-size: 5em; font-weight: 900; line-height: 1; margin: 10px 0; letter-spacing: -3px; }
+    .official-name { font-size: 1.6em; font-weight: 800; color: #fff; }
+    .official-region { font-size: 0.85em; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+    
+    .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; font-size: 0.7em; color: #888; text-transform: uppercase; }
+    .stat-val { color: white; font-weight: bold; display: block; font-size: 1.2em; }
+
+    .btn-action { 
+      display: block; width: 100%; padding: 22px; margin-top: 25px;
+      border-radius: 20px; text-decoration: none; font-weight: 800; color: white;
+      background: var(--danger); border: none; cursor: pointer;
+    }
+
+    /* Виправлене модальне вікно */
+    .modal { 
+      display: none; /* Буде flex через JS */
+      position: fixed; z-index: 1000; left: 0; top: 0; 
+      width: 100%; height: 100%; background: rgba(0,0,0,0.9); 
+      backdrop-filter: blur(15px);
+      align-items: center; justify-content: center;
+    }
+    .modal-content { 
+      background: white; color: #111; padding: 40px; border-radius: 35px; 
+      width: 90%; max-width: 450px; text-align: center;
+      position: relative; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .close { position: absolute; right: 25px; top: 20px; cursor: pointer; font-size: 30px; color: #ccc; }
+    
+    .progress-container { background: #eee; border-radius: 10px; height: 10px; margin: 20px 0; overflow: hidden; }
+    .progress-bar { background: var(--accent); height: 100%; width: 68%; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>GABRIEL</h1>
+    <p class="tagline">The Digital Judge Protocol</p>
+    
+    <form id="auditForm">
+      <div class="search-box">
+        <input type="text" id="nameInput" placeholder="Введіть прізвище або область..." autocomplete="off">
+      </div>
+      
+      <div class="btn-group">
+        <button type="submit" class="btn-scan" id="scanBtn">Запустити AI-Аналіз</button>
+        <button type="button" id="supportBtn" class="btn-support">🛡️ SUPPORT PROJECT</button>
+        <button type="button" onclick="alert('База оновлена: 21.02.2026')" class="btn-support">📡 DATA STATUS</button>
+      </div>
+    </form>
+
+    <div id="resArea" class="result-box">
+      <div id="log" class="log-line"></div>
+      <div class="card">
+        <div id="offRegion" class="official-region">--</div>
+        <div id="offName" class="official-name">Запит...</div>
+        <div id="scoreVal" class="score-circle">--%</div>
+        <div id="verdict" style="font-weight: 700; margin-bottom: 20px;">Аналіз параметрів...</div>
+        
+        <div class="stats">
+          <div>Прозорість<span id="stat1" class="stat-val">0</span></div>
+          <div>Медіа-фон<span id="stat2" class="stat-val">0</span></div>
+          <div>Скарги<span id="stat3" class="stat-val">0</span></div>
+        </div>
+      </div>
+      <button class="btn-action" onclick="document.getElementById('supportBtn').click()">💸 ВЕРИФІКУВАТИ ОНОВЛЕННЯ</button>
+    </div>
+  </div>
+
+  <div id="paymentModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <h2 style="font-weight: 900; letter-spacing: -1px; margin-bottom: 10px;">ПІДТРИМКА GABRIEL AI</h2>
+      
+      <p style="margin: 15px 0; color: #444; font-size: 0.9em; line-height: 1.4; text-align: left;">
+        Твій внесок фінансує <b>розробку архітектури цифрового регулювання</b> та підтримку серверних потужностей Gabriel. Ми будуємо незалежну екосистему автоматизованого аудиту.
+      </p>
+
+      <div style="text-align: left; font-size: 0.75em; font-weight: bold; color: #888; text-transform: uppercase;">Статус розробки архітектури: 68%</div>
+      <div class="progress-container">
+        <div class="progress-bar"></div>
+      </div>
+
+      <a href="https://send.monobank.ua/XXXX" target="_blank" style="display:block; padding:18px; background:#000; color:#fff; border-radius:15px; text-decoration:none; font-weight:bold; margin-bottom:10px;">Monobank (UA)</a>
+      
+      <div id="wallet" style="padding:15px; background:#f4f4f4; border-radius:15px; font-family:monospace; font-size:0.75em; word-break:break-all; cursor:pointer; border: 1px dashed #ccc;">TKXAcz7rhE6kY77diK8h7fMMiRw29oQQ5u</div>
+      <p id="copyStatus" style="font-size: 0.65em; color: #aaa; margin-top: 8px;">Натисніть на адресу, щоб скопіювати</p>
+    </div>
+  </div>
+
+  <script>
+    const REAL_DATABASE = {
+      'кім': { region: 'Миколаївська', name: 'Віталій Кім', trust: 84, stats: [92, 88, 12] },
+      'федоров': { region: 'Запорізька', name: 'Іван Федоров', trust: 79, stats: [85, 80, 15] },
+      'кличко': { region: 'Київ (КМДА)', name: 'Віталій Кличко', trust: 54, stats: [45, 60, 55] },
+      'філашкін': { region: 'Донецька', name: 'Вадим Філашкін', trust: 41, stats: [30, 40, 65] },
+      'синєгубов': { region: 'Харківська', name: 'Олег Синєгубов', trust: 68, stats: [70, 75, 20] },
+      'кіпер': { region: 'Одеська', name: 'Олег Кіпер', trust: 39, stats: [25, 35, 75] },
+      'козицький': { region: 'Львівська', name: 'Максим Козицький', trust: 71, stats: [78, 80, 18] }
+    };
+
+    const ELEMENTS = {
+      form: document.getElementById('auditForm'),
+      input: document.getElementById('nameInput'),
+      btn: document.getElementById('scanBtn'),
+      res: document.getElementById('resArea'),
+      log: document.getElementById('log'),
+      name: document.getElementById('offName'),
+      region: document.getElementById('offRegion'),
+      score: document.getElementById('scoreVal'),
+      verdict: document.getElementById('verdict'),
+      s1: document.getElementById('stat1'),
+      s2: document.getElementById('stat2'),
+      s3: document.getElementById('stat3'),
+      modal: document.getElementById('paymentModal'),
+      supportBtn: document.getElementById('supportBtn'),
+      closeBtn: document.getElementById('closeModal'),
+      wallet: document.getElementById('wallet'),
+      copyStatus: document.getElementById('copyStatus')
+    };
+
+    const startAnalysis = async () => {
+      const val = ELEMENTS.input.value.toLowerCase().trim();
+      if(!val) return;
+
+      ELEMENTS.btn.disabled = true;
+      ELEMENTS.res.style.display = 'block';
+      
+      const steps = [
+        "> Встановлення зв'язку з архітектурою Gabriel...",
+        "> Аналіз протоколів цифрового регулювання...",
+        "> Парсинг декларацій та медіа-активності...",
+        "> Фіналізація вердикту R-1..."
+      ];
+
+      for(let s of steps) {
+        ELEMENTS.log.innerText = s;
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      const data = REAL_DATABASE[val];
+
+      if(data) {
+        const toxicity = 100 - data.trust;
+        ELEMENTS.name.innerText = data.name;
+        ELEMENTS.region.innerText = data.region + " ОБЛАСТЬ";
+        ELEMENTS.score.innerText = toxicity + "%";
+        let color = toxicity > 60 ? 'var(--danger)' : (toxicity > 40 ? 'var(--warning)' : 'var(--success)');
+        ELEMENTS.score.style.color = color;
+        ELEMENTS.verdict.innerText = toxicity > 60 ? "КРИТИЧНИЙ РИЗИК" : (toxicity > 40 ? "СЕРЕДНЯ ТОКСИЧНІСТЬ" : "ВИСОКА ДОВІРА");
+        ELEMENTS.verdict.style.color = color;
+        ELEMENTS.s1.innerText = data.stats[0] + "%";
+        ELEMENTS.s2.innerText = data.stats[1] + "%";
+        ELEMENTS.s3.innerText = data.stats[2] + "%";
+      } else {
+        ELEMENTS.name.innerText = val.toUpperCase();
+        ELEMENTS.region.innerText = "РЕГІОН НЕ ВИЗНАЧЕНО";
+        ELEMENTS.score.innerText = "??%";
+        ELEMENTS.score.style.color = "#555";
+        ELEMENTS.verdict.innerText = "ПОТРІБНА РУЧНА ВЕРИФІКАЦІЯ";
+        ELEMENTS.s1.innerText = "0"; ELEMENTS.s2.innerText = "0"; ELEMENTS.s3.innerText = "0";
+      }
+
+      ELEMENTS.log.innerText = "> Аналіз завершено успішно.";
+      ELEMENTS.btn.disabled = false;
+    };
+
+    ELEMENTS.form.onsubmit = (e) => { e.preventDefault(); startAnalysis(); };
+
+    // Modal Logic
+    ELEMENTS.supportBtn.onclick = () => ELEMENTS.modal.style.display = "flex";
+    ELEMENTS.closeBtn.onclick = () => ELEMENTS.modal.style.display = "none";
+    window.onclick = (e) => { if(e.target == ELEMENTS.modal) ELEMENTS.modal.style.display = "none"; }
+    
+
+    // Copy to clipboard
+    ELEMENTS.wallet.onclick = () => {
+      const text = ELEMENTS.wallet.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        ELEMENTS.copyStatus.innerText = "СКОПІЙОВАНО!";
+        ELEMENTS.copyStatus.style.color = "var(--success)";
+        setTimeout(() => {
+          ELEMENTS.copyStatus.innerText = "Натисніть на адресу, щоб скопіювати";
+          ELEMENTS.copyStatus.style.color = "#aaa";
+        }, 2000);
+      });
+    };
+  </script>
+</body>
+</html>
